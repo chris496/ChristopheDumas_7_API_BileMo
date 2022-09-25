@@ -12,7 +12,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
-use Symfony\Component\Serializer\SerializerInterface;
+use JMS\Serializer\Serializer;
+use JMS\Serializer\SerializationContext;
+use JMS\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -30,7 +32,8 @@ class UserController extends AbstractController
             $item->tag("usersCache");
             return $userRepository->findAllWithPagination($page, $limit, $idClient);
         });
-        $jsonUserList = $serializer->serialize($userList, 'json', ['groups' => 'getUsers']);
+        $context = SerializationContext::create()->setGroups(['getUsers']);
+        $jsonUserList = $serializer->serialize($userList, 'json', $context);
         
         return new JsonResponse($jsonUserList, Response::HTTP_OK, [], true);
     }
@@ -39,7 +42,8 @@ class UserController extends AbstractController
     public function getOneUser(int $idClient, int $id, User $user, UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
         $oneUser = $userRepository->findUser($idClient, $id);
-        $jsonUser = $serializer->serialize($oneUser, 'json', ['groups' => 'getUsers']);
+        $context = SerializationContext::create()->setGroups(['getUsers']);
+        $jsonUserList = $serializer->serialize($user, 'json', $context);
         
         return new JsonResponse($jsonUser, Response::HTTP_OK, [], true);
     }
@@ -72,8 +76,9 @@ class UserController extends AbstractController
         $em->persist($user);
         $em->flush();
 
-        $oneUser = $userRepository->findUser($idClient, $id);
-        $jsonUser = $serializer->serialize($oneUser, 'json', ['groups' => 'getUsers']);
+        //$oneUser = $userRepository->findUser($idClient, $id);
+        $context = SerializationContext::create()->setGroups(['getUsers']);
+        $jsonUser = $serializer->serialize($user, 'json', $context);
         $location = $urlGenerator->generate('detailUser', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
         
         return new JsonResponse($jsonUser, Response::HTTP_CREATED, ["Location" => $location], true);
