@@ -39,6 +39,17 @@ class UserRepository extends ServiceEntityRepository
         }
     }
 
+    public function findClient($idClient)
+    {
+        return $this->createQueryBuilder('u')
+           ->andWhere('u.client = :idClient')
+           ->setParameter('idClient', $idClient)
+           ->orderBy('u.id', 'ASC')
+           ->getQuery()
+          ->getResult()
+       ;
+    }
+
 //    /**
 //     * @return User[] Returns an array of User objects
 //     */
