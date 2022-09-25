@@ -6,10 +6,12 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Repository\ClientRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -18,12 +20,16 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class UserController extends AbstractController
 {
     #[Route('api/client/{idClient}/users', name: 'users', methods: ['GET'])]
-    public function getUserList(Request $request, int $idClient, UserRepository $userRepository, ClientRepository $clientRepository, SerializerInterface $serializer): JsonResponse
+    public function getUserList(Request $request, int $idClient, UserRepository $userRepository, ClientRepository $clientRepository, SerializerInterface $serializer, TagAwareCacheInterface $cachePool): JsonResponse
     {
         $page = $request->get('page', 1);
         $limit = $request->get('limit', 3);
 
-        $userList = $userRepository->findAllWithPagination($page, $limit, $idClient);
+        $idCache = "getAllUsers-" . $page . "-" . $limit;
+        $userList = $cachePool->get($idCache, function (ItemInterface $item) use ($userRepository, $page, $limit, $idClient) {
+            $item->tag("usersCache");
+            return $userRepository->findAllWithPagination($page, $limit, $idClient);
+        });
         $jsonUserList = $serializer->serialize($userList, 'json', ['groups' => 'getUsers']);
         
         return new JsonResponse($jsonUserList, Response::HTTP_OK, [], true);
@@ -39,8 +45,9 @@ class UserController extends AbstractController
     }
 
     #[Route('api/client/{idClient}/users/{id}', name: 'deleteUser', methods: ['DELETE'])]
-    public function deleteOneUser(User $user, EntityManagerInterface $em): JsonResponse
+    public function deleteOneUser(User $user, EntityManagerInterface $em, TagAwareCacheInterface $cachePool): JsonResponse
     {
+        $cachePool->invalidateTags(["usersCache"]);
         $em->remove($user);
         $em->flush();
         
