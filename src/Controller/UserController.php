@@ -18,9 +18,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class UserController extends AbstractController
 {
     #[Route('api/client/{idClient}/users', name: 'users', methods: ['GET'])]
-    public function getUserList(int $idClient, UserRepository $userRepository, ClientRepository $clientRepository, SerializerInterface $serializer): JsonResponse
+    public function getUserList(Request $request, int $idClient, UserRepository $userRepository, ClientRepository $clientRepository, SerializerInterface $serializer): JsonResponse
     {
-        $userList = $userRepository->findClient($idClient);
+        $page = $request->get('page', 1);
+        $limit = $request->get('limit', 3);
+
+        $userList = $userRepository->findAllWithPagination($page, $limit, $idClient);
         $jsonUserList = $serializer->serialize($userList, 'json', ['groups' => 'getUsers']);
         
         return new JsonResponse($jsonUserList, Response::HTTP_OK, [], true);
