@@ -2,10 +2,34 @@
 
 namespace App\Entity;
 
-use App\Repository\ProductRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\ProductRepository;
+use Hateoas\Configuration\Annotation\Relation;
+use Hateoas\Configuration\Annotation as Hateoas;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
+/**
+ * 
+ * @Relation(
+ *      "allProducts",
+ *      href = @Hateoas\Route(
+ *          "product",
+ *          parameters = { }
+ *      ),
+ *      exclusion = @Hateoas\Exclusion(excludeIf = "expr(not is_granted('ROLE_ADMIN'))")
+ * )
+ * 
+ * @Relation(
+ *      "detailProduct",
+ *      href = @Hateoas\Route(
+ *          "detailProduct",
+ *          parameters = { "id" = "expr(object.getId())" }
+ *      ),
+ *      exclusion = @Hateoas\Exclusion(excludeIf = "expr(not is_granted('ROLE_ADMIN'))")
+ * )
+ * 
+ */
 class Product
 {
     #[ORM\Id]
