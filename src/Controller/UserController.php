@@ -25,9 +25,12 @@ class UserController extends AbstractController
     }
 
     #[Route('api/client/{idClient}/users/{id}', name: 'detailUser', methods: ['GET'])]
-    public function getOneUser(User $user, UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
+    public function getOneUser(int $idClient, int $id, User $user, UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
-
+        $oneUser = $userRepository->findUser($idClient, $id);
+        $jsonUserList = $serializer->serialize($oneUser, 'json', ['groups' => 'getUsers']);
+        
+        return new JsonResponse($jsonUserList, Response::HTTP_OK, [], true);
     }
 
     #[Route('api/client/{idClient}/users/{id}', name: 'deleteUser', methods: ['DELETE'])]
