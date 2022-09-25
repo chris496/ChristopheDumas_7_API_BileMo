@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -44,9 +45,15 @@ class UserController extends AbstractController
     }
 
     #[Route('api/client/{idClient}/users', name: 'createUser', methods: ['POST'])]
-    public function createOneUser($idClient, Request $request, ClientRepository $clientRepository, EntityManagerInterface $em, SerializerInterface $serializer): JsonResponse
+    public function createOneUser($idClient, Request $request, ClientRepository $clientRepository, EntityManagerInterface $em, SerializerInterface $serializer, ValidatorInterface $validator): JsonResponse
     {
         $user = $serializer->deserialize($request->getContent(), User::class, 'json');
+        
+        $errors = $validator->validate($user);
+
+        if($errors->count() > 0) {
+            return new JsonResponse($serializer->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
+        }
 
         $content = $request->toArray();
         $idClient = $content['idClient'];

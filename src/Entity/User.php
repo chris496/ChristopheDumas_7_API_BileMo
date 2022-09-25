@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use Assert\NotBlank;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -25,6 +26,7 @@ class User
 
     #[ORM\Column(length: 50)]
     #[Groups(["getUsers"])]
+    #[NotBlank(message: "l'adresse mail est obligatoire")]
     private ?string $email = null;
 
     #[ORM\Column(length: 50)]
