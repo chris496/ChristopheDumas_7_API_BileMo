@@ -39,6 +39,15 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *      exclusion = @Hateoas\Exclusion(groups="getUsers", excludeIf = "expr(not is_granted('ROLE_ADMIN'))")
  * )
  *
+ * * @Relation(
+ *      "postUser",
+ *      href = @Hateoas\Route(
+ *          "createUser",
+ *          parameters = { "idClient" = "expr(object.getClient().getId())" }
+ *      ),
+ *      exclusion = @Hateoas\Exclusion(groups="getUsers", excludeIf = "expr(not is_granted('ROLE_ADMIN'))")
+ * )
+ *
  */
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User
@@ -57,7 +66,7 @@ class User
     #[Groups(["getUsers"])]
     private ?string $lastname = null;
 
-    #[ORM\Column(length: 50)]
+    #[ORM\Column(length: 50, unique : true)]
     #[Groups(["getUsers"])]
     #[NotBlank(message: "l'adresse mail est obligatoire")]
     private ?string $email = null;
@@ -66,7 +75,7 @@ class User
     #[Groups(["getUsers"])]
     private ?string $password = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     #[Groups(["getUsers"])]
     private ?\DateTimeImmutable $created_at = null;
 
