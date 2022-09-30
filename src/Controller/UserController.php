@@ -96,8 +96,6 @@ class UserController extends AbstractController
     #[Route('api/client/{idClient}/users/{id}', name: 'detailUser', methods: ['GET'])]
     public function getOneUser(int $idClient, int $id, User $user, UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
-        //$user = $userRepository->findUser($idClient, $id);
-        //dd($user);
         $context = SerializationContext::create()->setGroups(['getUsers']);
         $jsonUser = $serializer->serialize($user, 'json', $context);
 
@@ -154,10 +152,9 @@ class UserController extends AbstractController
      * @return JsonResponse
      */
     #[Route('api/client/{idClient}/users', name: 'createUser', methods: ['POST'])]
-    public function createOneUser($idClient, Request $request, ClientRepository $clientRepository, EntityManagerInterface $em, SerializerInterface $serializer, ValidatorInterface $validator): JsonResponse
+    public function createOneUser(int $idClient, Request $request, ClientRepository $clientRepository, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, SerializerInterface $serializer, ValidatorInterface $validator): JsonResponse
     {
         $user = $serializer->deserialize($request->getContent(), User::class, 'json');
-        dd($user);
         $errors = $validator->validate($user);
 
         if ($errors->count() > 0) {
@@ -165,16 +162,17 @@ class UserController extends AbstractController
         }
 
         $content = $request->toArray();
-        $idClient = $content['idClient'];
-        $user->setClient($clientRepository->find($idclient));
+
+        $client = $clientRepository->find($idClient);
+        $user->setClient($client);
 
         $em->persist($user);
         $em->flush();
 
-        //$oneUser = $userRepository->findUser($idClient, $id);
+
         $context = SerializationContext::create()->setGroups(['getUsers']);
         $jsonUser = $serializer->serialize($user, 'json', $context);
-        $location = $urlGenerator->generate('detailUser', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+        $location = $urlGenerator->generate('detailUser', ['idClient' => $idClient, 'id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
         return new JsonResponse($jsonUser, Response::HTTP_CREATED, ["Location" => $location], true);
     }
