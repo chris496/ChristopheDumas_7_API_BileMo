@@ -11,8 +11,6 @@ use Doctrine\Persistence\ObjectManager;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-
-
 //attention description (lorem) + price + passwordhash
 
 
@@ -20,7 +18,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 class AppFixtures extends Fixture
 {
     private $userPasswordHasher;
-    
+
     public function __construct(UserPasswordHasherInterface $userPasswordHasher)
     {
         $this->userPasswordHasher = $userPasswordHasher;
@@ -51,13 +49,13 @@ class AppFixtures extends Fixture
 
         // create client
         for ($i = 0; $i < 5; $i++) {
-            $client = new Client;
+            $client = new Client();
             $client->setCreatedAt(new DateTimeImmutable())
                 ->setEmail($faker->safeEmail)
                 ->setName($faker->Name());
 
             //$password = $this->encoder->hashPassword($user, 'password');
-            
+
             $client->setPassword('password');
             $manager->persist($client);
 
@@ -66,7 +64,7 @@ class AppFixtures extends Fixture
 
         // create user
         for ($i = 0; $i < 20; $i++) {
-            $user = new User;
+            $user = new User();
             $user->setCreatedAt(new DateTimeImmutable())
                 ->setEmail($faker->safeEmail)
                 ->setFirstname($faker->firstName())
@@ -77,9 +75,9 @@ class AppFixtures extends Fixture
             $manager->persist($user);
         }
 
-         // create product
-         for ($i = 0; $i < 5; $i++) {
-            $product = new Product;
+        // create product
+        for ($i = 0; $i < 5; $i++) {
+            $product = new Product();
             $product->setName($faker->randomElement($products))
                 ->setDescription('test')
                 ->setPrice(10)

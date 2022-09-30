@@ -70,7 +70,7 @@ class UserController extends AbstractController
         });
         $context = SerializationContext::create()->setGroups(['getUsers']);
         $jsonUserList = $serializer->serialize($userList, 'json', $context);
-        
+
         return new JsonResponse($jsonUserList, Response::HTTP_OK, [], true);
     }
 
@@ -100,7 +100,7 @@ class UserController extends AbstractController
         //dd($user);
         $context = SerializationContext::create()->setGroups(['getUsers']);
         $jsonUser = $serializer->serialize($user, 'json', $context);
-        
+
         return new JsonResponse($jsonUser, Response::HTTP_OK, [], true);
     }
 
@@ -129,7 +129,7 @@ class UserController extends AbstractController
         $cachePool->invalidateTags(["usersCache"]);
         $em->remove($user);
         $em->flush();
-        
+
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
@@ -160,14 +160,14 @@ class UserController extends AbstractController
         dd($user);
         $errors = $validator->validate($user);
 
-        if($errors->count() > 0) {
+        if ($errors->count() > 0) {
             return new JsonResponse($serializer->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
         }
 
         $content = $request->toArray();
         $idClient = $content['idClient'];
         $user->setClient($clientRepository->find($idclient));
-        
+
         $em->persist($user);
         $em->flush();
 
@@ -175,8 +175,7 @@ class UserController extends AbstractController
         $context = SerializationContext::create()->setGroups(['getUsers']);
         $jsonUser = $serializer->serialize($user, 'json', $context);
         $location = $urlGenerator->generate('detailUser', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
-        
+
         return new JsonResponse($jsonUser, Response::HTTP_CREATED, ["Location" => $location], true);
-        
     }
 }

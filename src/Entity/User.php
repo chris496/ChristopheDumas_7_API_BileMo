@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-//use Assert\NotBlank;
+use Assert\NotBlank;
 use App\Entity\User;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
@@ -11,7 +11,7 @@ use Hateoas\Configuration\Annotation as Hateoas;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
- * 
+ *
  * @Relation(
  *      "allUsers",
  *      href = @Hateoas\Route(
@@ -20,7 +20,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *      ),
  *      exclusion = @Hateoas\Exclusion(groups="getUsers", excludeIf = "expr(not is_granted('ROLE_ADMIN'))", excludeIf = "expr(object.getClient() === null)")
  * )
- * 
+ *
  * @Relation(
  *      "oneUser",
  *      href = @Hateoas\Route(
@@ -38,7 +38,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *      ),
  *      exclusion = @Hateoas\Exclusion(groups="getUsers", excludeIf = "expr(not is_granted('ROLE_ADMIN'))")
  * )
- * 
+ *
  */
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User
