@@ -18,7 +18,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *          "users",
  *          parameters = { "idClient" = "expr(object.getClient().getId())" }
  *      ),
- *      exclusion = @Hateoas\Exclusion(groups="getUsers", excludeIf = "expr(not is_granted('ROLE_ADMIN'))")
+ *      exclusion = @Hateoas\Exclusion(groups="getUsers", excludeIf = "expr(not is_granted('ROLE_ADMIN'))", excludeIf = "expr(object.getClient() === null)")
  * )
  * 
  * @Relation(
