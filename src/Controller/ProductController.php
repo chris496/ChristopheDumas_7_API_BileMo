@@ -65,7 +65,7 @@ class ProductController extends AbstractController
             return $productRepository->findAllWithPagination($page, $limit);
         });
         $jsonProductList = $serializer->serialize($productList, 'json');
-        
+
         return new JsonResponse($jsonProductList, Response::HTTP_OK, [], true);
     }
 
@@ -90,8 +90,8 @@ class ProductController extends AbstractController
     #[Route('api/products/{id}', name: 'detailProduct', methods: ['GET'])]
     public function getDetailProduct(Product $product, SerializerInterface $serializer): JsonResponse
     {
-            $jsonProduct = $serializer->serialize($product, 'json');
+        $jsonProduct = $serializer->serialize($product, 'json');
 
-            return new JsonResponse($jsonProduct, Response::HTTP_OK, ['accept' => 'json'], true);
+        return new JsonResponse($jsonProduct, Response::HTTP_OK, ['accept' => 'json'], true);
     }
 }

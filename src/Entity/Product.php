@@ -10,7 +10,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 /**
- * 
+ *
  * @Relation(
  *      "allProducts",
  *      href = @Hateoas\Route(
@@ -19,7 +19,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *      ),
  *      exclusion = @Hateoas\Exclusion(excludeIf = "expr(not is_granted('ROLE_ADMIN'))")
  * )
- * 
+ *
  * @Relation(
  *      "detailProduct",
  *      href = @Hateoas\Route(
@@ -28,7 +28,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *      ),
  *      exclusion = @Hateoas\Exclusion(excludeIf = "expr(not is_granted('ROLE_ADMIN'))")
  * )
- * 
+ *
  */
 class Product
 {

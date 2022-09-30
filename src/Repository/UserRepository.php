@@ -47,10 +47,11 @@ class UserRepository extends ServiceEntityRepository
            ->orderBy('u.id', 'ASC')
            ->getQuery()
           ->getResult()
-       ;
+        ;
     }
 
-    public function findAllWithPagination($page, $limit, $idClient) {
+    public function findAllWithPagination($page, $limit, $idClient)
+    {
         $qb = $this->createQueryBuilder('u')
             ->andWhere('u.client = :idClient')
             ->setParameter('idClient', $idClient)
@@ -69,7 +70,7 @@ class UserRepository extends ServiceEntityRepository
            ->orderBy('u.id', 'ASC')
            ->getQuery()
           ->getResult()
-       ;
+        ;
     }
 
 //    /**
