@@ -58,14 +58,14 @@ class UserController extends AbstractController
         $limit = $request->get('limit', 3);
 
         $idCache = 'getAllUsers-'.$page.'-'.$limit.'-'.$idClient;
-        $userList = $cachePool->get($idCache, function (ItemInterface $item) use ($userRepository, $page, $limit, $idClient) {
+        $jsonUserList = $cachePool->get($idCache, function (ItemInterface $item) use ($userRepository, $page, $limit, $idClient, $serializer) {
             $item->tag('usersCache');
 
-            return $userRepository->findAllWithPagination($page, $limit, $idClient);
+            $userListLazy = $userRepository->findAllWithPagination($page, $limit, $idClient);
+            $context = SerializationContext::create()->setGroups(['getUsers']);
+            return $serializer->serialize($userListLazy, 'json', $context);
         });
-        $context = SerializationContext::create()->setGroups(['getUsers']);
-        $jsonUserList = $serializer->serialize($userList, 'json', $context);
-
+   
         return new JsonResponse($jsonUserList, Response::HTTP_OK, [], true);
     }
 
@@ -86,8 +86,9 @@ class UserController extends AbstractController
      */
     #[Route('api/client/{idClient}/users/{id}', name: 'detailUser', methods: ['GET'])]
     #[IsGranted('ROLE_CLIENT', message: 'Vous n\'avez pas les droits suffisants')]
-    public function getOneUser(int $idClient, int $id, User $user, UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
+    public function getOneUser(int $idClient, int $id, UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
+        $user = $userRepository->findUser($idClient, $id);
         $context = SerializationContext::create()->setGroups(['getUsers']);
         $jsonUser = $serializer->serialize($user, 'json', $context);
 
@@ -112,10 +113,11 @@ class UserController extends AbstractController
      */
     #[Route('api/client/{idClient}/users/{id}', name: 'deleteUser', methods: ['DELETE'])]
     #[IsGranted('ROLE_CLIENT', message: 'Vous n\'avez pas les droits suffisants')]
-    public function deleteOneUser(User $user, EntityManagerInterface $em, TagAwareCacheInterface $cachePool): JsonResponse
+    public function deleteOneUser(int $idClient, int $id, UserRepository $userRepository, EntityManagerInterface $em, TagAwareCacheInterface $cachePool): JsonResponse
     {
         $cachePool->invalidateTags(['usersCache']);
-        $em->remove($user);
+        $user = $userRepository->findUser($idClient, $id);
+        $em->remove($user[0]);
         $em->flush();
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
