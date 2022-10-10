@@ -3,24 +3,23 @@
 namespace App\Controller;
 
 use App\Entity\User;
-use App\Repository\UserRepository;
 use App\Repository\ClientRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Contracts\Cache\ItemInterface;
+use JMS\Serializer\SerializationContext;
+use JMS\Serializer\SerializerInterface;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use OpenApi\Annotations as OA;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Contracts\Cache\TagAwareCacheInterface;
-use JMS\Serializer\Serializer;
-use JMS\Serializer\SerializationContext;
-use JMS\Serializer\SerializerInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Nelmio\ApiDocBundle\Annotation\Model;
-use Nelmio\ApiDocBundle\Annotation\Security;
-use OpenApi\Annotations as OA;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 class UserController extends AbstractController
 {
@@ -41,7 +40,6 @@ class UserController extends AbstractController
      *     description="La page que l'on veut récupérer",
      *     @OA\Schema(type="int")
      * )
-     *
      * @OA\Parameter(
      *     name="limit",
      *     in="query",
@@ -50,22 +48,19 @@ class UserController extends AbstractController
      * )
      * @OA\Tag(name="User")
      *
-     * @param UserRepository $userRepository
-     * @param ClientRepository $clientRepository
      * @param $idClient
-     * @param SerializerInterface $serializer
-     * @param Request $request
-     * @return JsonResponse
      */
     #[Route('api/client/{idClient}/users', name: 'users', methods: ['GET'])]
+    #[IsGranted('ROLE_CLIENT', message: 'Vous n\'avez pas les droits suffisants')]
     public function getUserList(Request $request, int $idClient, UserRepository $userRepository, ClientRepository $clientRepository, SerializerInterface $serializer, TagAwareCacheInterface $cachePool): JsonResponse
     {
         $page = $request->get('page', 1);
         $limit = $request->get('limit', 3);
 
-        $idCache = "getAllUsers-" . $page . "-" . $limit;
+        $idCache = 'getAllUsers-'.$page.'-'.$limit.'-'.$idClient;
         $userList = $cachePool->get($idCache, function (ItemInterface $item) use ($userRepository, $page, $limit, $idClient) {
-            $item->tag("usersCache");
+            $item->tag('usersCache');
+
             return $userRepository->findAllWithPagination($page, $limit, $idClient);
         });
         $context = SerializationContext::create()->setGroups(['getUsers']);
@@ -85,15 +80,12 @@ class UserController extends AbstractController
      *        @OA\Items(ref=@Model(type=User::class))
      *     )
      * )
-     *
      * @OA\Tag(name="User")
      *
-     * @param User $user
      * @param $idClient
-     * @param SerializerInterface $serializer
-     * @return JsonResponse
      */
     #[Route('api/client/{idClient}/users/{id}', name: 'detailUser', methods: ['GET'])]
+    #[IsGranted('ROLE_CLIENT', message: 'Vous n\'avez pas les droits suffisants')]
     public function getOneUser(int $idClient, int $id, User $user, UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
         $context = SerializationContext::create()->setGroups(['getUsers']);
@@ -113,18 +105,16 @@ class UserController extends AbstractController
      *        @OA\Items(ref=@Model(type=User::class))
      *     )
      * )
-     *
      * @OA\Tag(name="User")
      *
-     * @param User $user
      * @param $idClient
      * @param SerializerInterface $serializer
-     * @return JsonResponse
      */
     #[Route('api/client/{idClient}/users/{id}', name: 'deleteUser', methods: ['DELETE'])]
+    #[IsGranted('ROLE_CLIENT', message: 'Vous n\'avez pas les droits suffisants')]
     public function deleteOneUser(User $user, EntityManagerInterface $em, TagAwareCacheInterface $cachePool): JsonResponse
     {
-        $cachePool->invalidateTags(["usersCache"]);
+        $cachePool->invalidateTags(['usersCache']);
         $em->remove($user);
         $em->flush();
 
@@ -142,16 +132,12 @@ class UserController extends AbstractController
      *        @OA\Items(ref=@Model(type=User::class))
      *     )
      * )
-     *
      * @OA\Tag(name="User")
      *
-     * @param ClientRepository $clientRepository
      * @param $idClient
-     * @param SerializerInterface $serializer
-     * @param Request $request
-     * @return JsonResponse
      */
     #[Route('api/client/{idClient}/users', name: 'createUser', methods: ['POST'])]
+    #[IsGranted('ROLE_CLIENT', message: 'Vous n\'avez pas les droits suffisants')]
     public function createOneUser(int $idClient, Request $request, ClientRepository $clientRepository, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, SerializerInterface $serializer, ValidatorInterface $validator): JsonResponse
     {
         $user = $serializer->deserialize($request->getContent(), User::class, 'json');
@@ -169,11 +155,10 @@ class UserController extends AbstractController
         $em->persist($user);
         $em->flush();
 
-
         $context = SerializationContext::create()->setGroups(['getUsers']);
         $jsonUser = $serializer->serialize($user, 'json', $context);
         $location = $urlGenerator->generate('detailUser', ['idClient' => $idClient, 'id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
-        return new JsonResponse($jsonUser, Response::HTTP_CREATED, ["Location" => $location], true);
+        return new JsonResponse($jsonUser, Response::HTTP_CREATED, ['Location' => $location], true);
     }
 }
