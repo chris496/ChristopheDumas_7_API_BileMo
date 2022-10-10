@@ -2,52 +2,47 @@
 
 namespace App\Entity;
 
-use Assert\NotBlank;
-use App\Entity\User;
-use Doctrine\ORM\Mapping as ORM;
+// use Assert\NotBlank;
 use App\Repository\UserRepository;
-use Hateoas\Configuration\Annotation\Relation;
+use Doctrine\ORM\Mapping as ORM;
 use Hateoas\Configuration\Annotation as Hateoas;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Hateoas\Configuration\Annotation\Relation;
+use JMS\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 /**
- *
  * @Relation(
  *      "allUsers",
  *      href = @Hateoas\Route(
  *          "users",
  *          parameters = { "idClient" = "expr(object.getClient().getId())" }
  *      ),
- *      exclusion = @Hateoas\Exclusion(groups="getUsers", excludeIf = "expr(not is_granted('ROLE_ADMIN'))", excludeIf = "expr(object.getClient() === null)")
+ *      exclusion = @Hateoas\Exclusion(groups="getUsers", excludeIf = "expr(not is_granted('ROLE_CLIENT'))", excludeIf = "expr(object.getClient() === null)")
  * )
- *
  * @Relation(
  *      "oneUser",
  *      href = @Hateoas\Route(
  *          "detailUser",
  *          parameters = { "idClient" = "expr(object.getClient().getId())", "id" = "expr(object.getId())" }
  *      ),
- *      exclusion = @Hateoas\Exclusion(groups="getUsers", excludeIf = "expr(not is_granted('ROLE_ADMIN'))")
+ *      exclusion = @Hateoas\Exclusion(groups="getUsers", excludeIf = "expr(not is_granted('ROLE_CLIENT'))")
  * )
- *
  * @Relation(
  *      "deleteUser",
  *      href = @Hateoas\Route(
  *          "deleteUser",
  *          parameters = { "idClient" = "expr(object.getClient().getId())", "id" = "expr(object.getId())" }
  *      ),
- *      exclusion = @Hateoas\Exclusion(groups="getUsers", excludeIf = "expr(not is_granted('ROLE_ADMIN'))")
+ *      exclusion = @Hateoas\Exclusion(groups="getUsers", excludeIf = "expr(not is_granted('ROLE_CLIENT'))")
  * )
- *
  * * @Relation(
  *      "postUser",
  *      href = @Hateoas\Route(
  *          "createUser",
  *          parameters = { "idClient" = "expr(object.getClient().getId())" }
  *      ),
- *      exclusion = @Hateoas\Exclusion(groups="getUsers", excludeIf = "expr(not is_granted('ROLE_ADMIN'))")
+ *      exclusion = @Hateoas\Exclusion(groups="getUsers", excludeIf = "expr(not is_granted('ROLE_CLIENT'))")
  * )
- *
  */
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User
@@ -55,28 +50,31 @@ class User
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getUsers"])]
+    #[Groups(['getUsers'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(["getUsers"])]
+    #[Groups(['getUsers'])]
+    #[NotBlank(message: 'le prénom est obligatoire')]
     private ?string $firstname = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(["getUsers"])]
+    #[Groups(['getUsers'])]
+    #[NotBlank(message: 'le nom est obligatoire')]
     private ?string $lastname = null;
 
     #[ORM\Column(length: 50, unique : true)]
-    #[Groups(["getUsers"])]
+    #[Groups(['getUsers'])]
     #[NotBlank(message: "l'adresse mail est obligatoire")]
     private ?string $email = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(["getUsers"])]
+    #[Groups(['getUsers'])]
+    #[NotBlank(message: 'le mot de passe est obligatoire')]
     private ?string $password = null;
 
-    #[ORM\Column(nullable: true)]
-    #[Groups(["getUsers"])]
+    #[ORM\Column]
+    #[Groups(['getUsers'])]
     private ?\DateTimeImmutable $created_at = null;
 
     #[ORM\ManyToOne(inversedBy: 'user')]
