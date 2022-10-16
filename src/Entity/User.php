@@ -3,11 +3,12 @@
 namespace App\Entity;
 
 // use Assert\NotBlank;
-use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Hateoas\Configuration\Annotation as Hateoas;
-use Hateoas\Configuration\Annotation\Relation;
+use App\Repository\UserRepository;
 use JMS\Serializer\Annotation\Groups;
+use Hateoas\Configuration\Annotation\Relation;
+use Hateoas\Configuration\Annotation as Hateoas;
+use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 /**
@@ -66,6 +67,7 @@ class User
     #[ORM\Column(length: 50, unique : true)]
     #[Groups(['getUsers'])]
     #[NotBlank(message: "l'adresse mail est obligatoire")]
+    #[Email(message: 'l\'email {{ value }} n\'est pas valide.')]
     private ?string $email = null;
 
     #[ORM\Column(length: 50)]
